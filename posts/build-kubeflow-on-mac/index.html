@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <script type="text/javascript" src="https://latest.cactus.chat/cactus.js"></script>
+  <link rel="stylesheet" href="https://latest.cactus.chat/style.css" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title> Mac 上安裝 kubeflow? 其實不太簡單 | Yan-Hao(Sean) Blog</title>
+  <link rel = 'canonical' href = 'https://yanhaochen.github.io/posts/build-kubeflow-on-mac/'>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="all,follow">
+  <meta name="googlebot" content="index,follow,snippet,archive">
+  <meta property="og:title" content="Mac 上安裝 kubeflow? 其實不太簡單" />
+<meta property="og:description" content="Mac 上安裝 kubeflow？其實不太簡單 小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。
+Overview  Homebrew：用來安裝 Multipass。 Multipass：用來開啟 Ubuntu 虛擬機。 Ubuntu 虛擬機：用來安裝 microk8s。 microk8s：透過 add-on 安裝 kubeflow。   關於設備的要求，如果你的 Mac 沒有 16G 的 Memory，這篇文章可能沒辦法帶給你有效的幫助。
+ 有了以上的藍圖，接下來就可以開始動手囉！
+Install Homebrew 在 Mac 上安裝套件怎麼能少了 Homebrew 呢？這邊不免俗的帶過一下：
+$ /bin/bash -c &#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&#34; Install Multipass 接下來，透過 Homebrew 來安裝 Multipass 吧！
+$ brew install multipass Launch a Ubuntu Machine 如果上述的安裝都順利完成，那就可以開始建立一個 Ubuntu Machine，以便安裝 microk8s。這邊我配了 4 個 CPU 及 12G 的 Memory 給這台 Machine。其中，Memory 要 12G 是 kubeflow 的基本需求，雖然可以透過環境變數（KUBEFLOW_IGNORE_MIN_MEM=true），忽略這項要求，但為了求順利架設，我還是配 12G 給它。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://yanhaochen.github.io/posts/build-kubeflow-on-mac/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-10-17T22:30:12+08:00" />
+<meta property="article:modified_time" content="2021-10-17T22:30:12+08:00" />
+
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Mac 上安裝 kubeflow? 其實不太簡單"/>
+<meta name="twitter:description" content="Mac 上安裝 kubeflow？其實不太簡單 小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。
+Overview  Homebrew：用來安裝 Multipass。 Multipass：用來開啟 Ubuntu 虛擬機。 Ubuntu 虛擬機：用來安裝 microk8s。 microk8s：透過 add-on 安裝 kubeflow。   關於設備的要求，如果你的 Mac 沒有 16G 的 Memory，這篇文章可能沒辦法帶給你有效的幫助。
+ 有了以上的藍圖，接下來就可以開始動手囉！
+Install Homebrew 在 Mac 上安裝套件怎麼能少了 Homebrew 呢？這邊不免俗的帶過一下：
+$ /bin/bash -c &#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&#34; Install Multipass 接下來，透過 Homebrew 來安裝 Multipass 吧！
+$ brew install multipass Launch a Ubuntu Machine 如果上述的安裝都順利完成，那就可以開始建立一個 Ubuntu Machine，以便安裝 microk8s。這邊我配了 4 個 CPU 及 12G 的 Memory 給這台 Machine。其中，Memory 要 12G 是 kubeflow 的基本需求，雖然可以透過環境變數（KUBEFLOW_IGNORE_MIN_MEM=true），忽略這項要求，但為了求順利架設，我還是配 12G 給它。"/>
+
+  
+  
+  
+  <link rel="stylesheet" href="https://yanhaochen.github.io/css/styles.94f653e9e151e28067a7c5dbbc4600cbd5a3c721e79faaf971e523c40f3b249b8e4f20bb57810dfffa8d559ca5c140fd56eb4cd9c0853113ad08e66afdb08bdd.css" integrity="sha512-lPZT6eFR4oBnp8XbvEYAy9WjxyHnn6r5ceUjxA87JJuOTyC7V4EN//qNVZylwUD9VutM2cCFMROtCOZq/bCL3Q=="> 
+
+  
+  
+  
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  
+
+  
+<link rel="icon" type="image/png" href="https://yanhaochen.github.io/images/favicon.ico" />
+
+  
+  
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+  <div class="content index py4">
+
+  <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;" aria-label="Top of Page"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+        <li><a href="/">Home</a></li>
+         
+        <li><a href="/posts">Writings</a></li>
+         
+        <li><a href="/tags">Tags</a></li>
+         
+        <li><a href="/about">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li>
+          <a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" aria-label="Top of Page">
+            <i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i>
+          </a>
+        </li>
+        <li>
+          <a class="icon" href="#" aria-label="Share">
+            <i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i>
+          </a>
+        </li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      
+      <ul>
+  
+  
+    
+  
+  
+  <li>
+    <a class="icon" href="http://www.facebook.com/sharer.php?u=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f" aria-label="Facebook">
+      <i class="fab fa-facebook " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://twitter.com/share?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&text=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Twitter">
+      <i class="fab fa-twitter " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.linkedin.com/shareArticle?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Linkedin">
+      <i class="fab fa-linkedin " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&is_video=false&description=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Pinterest">
+      <i class="fab fa-pinterest " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="mailto:?subject=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae&body=Check out this article: https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f" aria-label="Email">
+      <i class="fas fa-envelope " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://getpocket.com/save?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Pocket">
+      <i class="fab fa-get-pocket " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://reddit.com/submit?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="reddit">
+      <i class="fab fa-reddit " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.tumblr.com/share/link?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&name=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae&description=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%ef%bc%9f%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae%20%e5%b0%8f%e5%bc%9f%e5%9b%a0%e5%b7%a5%e4%bd%9c%e7%9a%84%e7%b7%a3%e6%95%85%ef%bc%8c%e9%9c%80%e8%a6%81%e9%96%8b%e5%a7%8b%e7%86%9f%e6%82%89%20kubeflow%20%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e9%ba%bc%ef%bc%8c%e6%89%80%e4%bb%a5%e5%b0%b1%e7%95%b0%e6%83%b3%e5%a4%a9%e9%96%8b%e7%9a%84%e6%83%b3%e5%9c%a8%e8%87%aa%e5%b7%b1%e7%9a%84%20Mac%20%e4%b8%8a%e5%bb%ba%e7%ab%8b%e4%b8%80%e5%80%8b%20kubeflow%20%e7%9a%84%e7%92%b0%e5%a2%83%ef%bc%88%e7%97%9b%e8%8b%a6%e7%9a%84%e9%96%8b%e5%a7%8b%ef%bc%8c%e5%be%80%e5%be%80%e9%83%bd%e6%98%af%e5%a6%82%e6%ad%a4%ef%bc%89%e3%80%82%e4%bb%a5%e4%b8%8b%e5%b0%87%e6%98%af%e6%88%91%e5%98%97%e8%a9%a6%e5%a4%9a%e7%a8%ae%e5%ae%89%e8%a3%9d%e7%b5%84%e5%90%88%e5%be%8c%ef%bc%8c%e5%b9%b8%e9%81%8b%e8%a9%a6%e5%87%ba%e7%9a%84%e4%b8%80%e7%a8%ae%e6%9e%b6%e8%a8%ad%e6%96%b9%e5%bc%8f%ef%bc%8c%e5%b8%8c%e6%9c%9b%e8%ae%80%e8%80%85%e4%b9%9f%e8%83%bd%e5%9c%a8%20Mac%20%e4%b8%8a%e9%a0%86%e5%88%a9%e6%9e%b6%e8%b5%b7%20kubeflow%e3%80%82%e9%a6%96%e5%85%88%ef%bc%8c%e4%ba%86%e8%a7%a3%e6%95%b4%e9%ab%94%e5%a4%a7%e6%a6%82%e7%9a%84%e6%b5%81%e7%a8%8b%ef%bc%8c%e6%88%96%e8%a8%b1%e6%9c%83%e6%af%94%e8%bc%83%e6%9c%89%e5%b9%ab%e5%8a%a9%e3%80%82%0aOverview%20%20Homebrew%ef%bc%9a%e7%94%a8%e4%be%86%e5%ae%89%e8%a3%9d%20Multipass%e3%80%82%20Multipass%ef%bc%9a%e7%94%a8%e4%be%86%e9%96%8b%e5%95%9f%20Ubuntu%20%e8%99%9b%e6%93%ac%e6%a9%9f%e3%80%82%20Ubuntu%20%e8%99%9b%e6%93%ac%e6%a9%9f%ef%bc%9a%e7%94%a8%e4%be%86%e5%ae%89%e8%a3%9d%20microk8s%e3%80%82%20microk8s%ef%bc%9a%e9%80%8f%e9%81%8e%20add-on%20%e5%ae%89%e8%a3%9d%20kubeflow%e3%80%82%20%20%20%e9%97%9c%e6%96%bc%e8%a8%ad%e5%82%99%e7%9a%84%e8%a6%81%e6%b1%82%ef%bc%8c%e5%a6%82%e6%9e%9c%e4%bd%a0%e7%9a%84%20Mac%20%e6%b2%92%e6%9c%89%2016G%20%e7%9a%84%20Memory%ef%bc%8c%e9%80%99%e7%af%87%e6%96%87%e7%ab%a0%e5%8f%af%e8%83%bd%e6%b2%92%e8%be%a6%e6%b3%95%e5%b8%b6%e7%b5%a6%e4%bd%a0%e6%9c%89%e6%95%88%e7%9a%84%e5%b9%ab%e5%8a%a9%e3%80%82%0a%20%e6%9c%89%e4%ba%86%e4%bb%a5%e4%b8%8a%e7%9a%84%e8%97%8d%e5%9c%96%ef%bc%8c%e6%8e%a5%e4%b8%8b%e4%be%86%e5%b0%b1%e5%8f%af%e4%bb%a5%e9%96%8b%e5%a7%8b%e5%8b%95%e6%89%8b%e5%9b%89%ef%bc%81%0aInstall%20Homebrew%20%e5%9c%a8%20Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%e5%a5%97%e4%bb%b6%e6%80%8e%e9%ba%bc%e8%83%bd%e5%b0%91%e4%ba%86%20Homebrew%20%e5%91%a2%ef%bc%9f%e9%80%99%e9%82%8a%e4%b8%8d%e5%85%8d%e4%bf%97%e7%9a%84%e5%b8%b6%e9%81%8e%e4%b8%80%e4%b8%8b%ef%bc%9a%0a%24%20%2fbin%2fbash%20-c%20%26%2334%3b%24%28curl%20-fsSL%20https%3a%2f%2fraw.githubusercontent.com%2fHomebrew%2finstall%2fHEAD%2finstall.sh%29%26%2334%3b%20Install%20Multipass%20%e6%8e%a5%e4%b8%8b%e4%be%86%ef%bc%8c%e9%80%8f%e9%81%8e%20Homebrew%20%e4%be%86%e5%ae%89%e8%a3%9d%20Multipass%20%e5%90%a7%ef%bc%81%0a%24%20brew%20install%20multipass%20Launch%20a%20Ubuntu%20Machine%20%e5%a6%82%e6%9e%9c%e4%b8%8a%e8%bf%b0%e7%9a%84%e5%ae%89%e8%a3%9d%e9%83%bd%e9%a0%86%e5%88%a9%e5%ae%8c%e6%88%90%ef%bc%8c%e9%82%a3%e5%b0%b1%e5%8f%af%e4%bb%a5%e9%96%8b%e5%a7%8b%e5%bb%ba%e7%ab%8b%e4%b8%80%e5%80%8b%20Ubuntu%20Machine%ef%bc%8c%e4%bb%a5%e4%be%bf%e5%ae%89%e8%a3%9d%20microk8s%e3%80%82%e9%80%99%e9%82%8a%e6%88%91%e9%85%8d%e4%ba%86%204%20%e5%80%8b%20CPU%20%e5%8f%8a%2012G%20%e7%9a%84%20Memory%20%e7%b5%a6%e9%80%99%e5%8f%b0%20Machine%e3%80%82%e5%85%b6%e4%b8%ad%ef%bc%8cMemory%20%e8%a6%81%2012G%20%e6%98%af%20kubeflow%20%e7%9a%84%e5%9f%ba%e6%9c%ac%e9%9c%80%e6%b1%82%ef%bc%8c%e9%9b%96%e7%84%b6%e5%8f%af%e4%bb%a5%e9%80%8f%e9%81%8e%e7%92%b0%e5%a2%83%e8%ae%8a%e6%95%b8%ef%bc%88KUBEFLOW_IGNORE_MIN_MEM%3dtrue%ef%bc%89%ef%bc%8c%e5%bf%bd%e7%95%a5%e9%80%99%e9%a0%85%e8%a6%81%e6%b1%82%ef%bc%8c%e4%bd%86%e7%82%ba%e4%ba%86%e6%b1%82%e9%a0%86%e5%88%a9%e6%9e%b6%e8%a8%ad%ef%bc%8c%e6%88%91%e9%82%84%e6%98%af%e9%85%8d%2012G%20%e7%b5%a6%e5%ae%83%e3%80%82" aria-label="Tumblr">
+      <i class="fab fa-tumblr " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://news.ycombinator.com/submitlink?u=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&t=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Hacker News">
+      <i class="fab fa-hacker-news " aria-hidden="true"></i>
+    </a>
+  </li>
+</ul>
+
+    </div>
+    
+    <div id="toc">
+      <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#install-homebrew">Install Homebrew</a></li>
+        <li><a href="#install-multipass">Install Multipass</a></li>
+        <li><a href="#launch-a-ubuntu-machine">Launch a Ubuntu Machine</a></li>
+        <li><a href="#build-kubeflow-by-microk8s-add-on">Build kubeflow by microk8s add-on</a></li>
+        <li><a href="#setting-sock-proxy-for-opening-kubeflow-ui-from-microk8s-vm">Setting Sock Proxy for Opening kubeflow UI from microk8s-vm</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+    
+  </span>
+</div>
+
+
+  <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+      <h1 class="posttitle" itemprop="name headline">
+        Mac 上安裝 kubeflow? 其實不太簡單
+      </h1>
+      <div class="meta">
+        
+        <div class="postdate">
+          
+          <time datetime="2021-10-17 22:30:12 &#43;0800 CST" itemprop="datePublished">2021-10-17</time>
+          
+        </div>
+        
+        
+        
+        
+        <div class="article-tag">
+            <i class="fas fa-tag"></i>
+            
+            
+            <a class="tag-link" href="/tags/kubeflow" rel="tag">kubeflow</a>
+            
+        </div>
+        
+      </div>
+    </header>
+
+  
+    
+    <div class="content" itemprop="articleBody">
+      <h1 id="mac-上安裝-kubeflow其實不太簡單">Mac 上安裝 kubeflow？其實不太簡單</h1>
+<p>小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。</p>
+<h3 id="overview">Overview</h3>
+<ol>
+<li>Homebrew：用來安裝 Multipass。</li>
+<li>Multipass：用來開啟 Ubuntu 虛擬機。</li>
+<li>Ubuntu 虛擬機：用來安裝 microk8s。</li>
+<li>microk8s：透過 add-on 安裝 kubeflow。</li>
+</ol>
+<blockquote>
+<p>關於設備的要求，如果你的 Mac 沒有 16G 的 Memory，這篇文章可能沒辦法帶給你有效的幫助。</p>
+</blockquote>
+<p>有了以上的藍圖，接下來就可以開始動手囉！</p>
+<h3 id="install-homebrew">Install Homebrew</h3>
+<p>在 Mac 上安裝套件怎麼能少了 Homebrew 呢？這邊不免俗的帶過一下：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ /bin/bash -c <span style="color:#e6db74">&#34;</span><span style="color:#66d9ef">$(</span>curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span style="color:#66d9ef">)</span><span style="color:#e6db74">&#34;</span>
+</code></pre></div><h3 id="install-multipass">Install Multipass</h3>
+<p>接下來，透過 Homebrew 來安裝 Multipass 吧！</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ brew install multipass
+</code></pre></div><h3 id="launch-a-ubuntu-machine">Launch a Ubuntu Machine</h3>
+<p>如果上述的安裝都順利完成，那就可以開始建立一個 Ubuntu Machine，以便安裝 microk8s。這邊我配了 4 個 CPU 及 12G 的 Memory 給這台 Machine。其中，Memory 要 12G 是 kubeflow 的基本需求，雖然可以透過環境變數（<code>KUBEFLOW_IGNORE_MIN_MEM=true</code>），忽略這項要求，但為了求順利架設，我還是配 12G 給它。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ multipass launch --name microk8s-vm --cpus <span style="color:#ae81ff">4</span> --mem 12G --disk 50G
+</code></pre></div><h4 id="login-ubuntu-machinemicrok8s-vm">Login Ubuntu Machine(microk8s-vm)</h4>
+<p>Multipass 連進虛擬機的方式：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ multipass shell microk8s-vm
+</code></pre></div><h4 id="install-microk8s">Install microk8s</h4>
+<p>在此，我們需要透過 Ubuntu 的 snap 工具，安裝 microk8s：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ sudo snap install microk8s --channel<span style="color:#f92672">=</span>1.20/edge --classic
+$ sudo usermod -a -G microk8s $USER
+$ sudo chown -f -R $USER ~/.kube
+<span style="color:#75715e"># 接下來，需要先登出當前的 terminal，再重新連進來一次，上述指令才會生效</span>
+<span style="color:#75715e"># 登出</span>
+$ exit
+<span style="color:#75715e"># 重新連線</span>
+$ multipass shell microk8s-vm
+</code></pre></div><p>這邊選擇的 microk8s 的版本是 <code>1.20/edge</code>，這也是經驗告訴我的結果。順道一提，<strong>如果 microk8s 版本 <code>&gt;=1.22</code>，add-on 的選項中，是沒有 kubeflow 的哦！</strong></p>
+<h3 id="build-kubeflow-by-microk8s-add-on">Build kubeflow by microk8s add-on</h3>
+<p>現在來到最關鍵的一步，也就是開啟 microk8s 的 kubeflow。這邊 kubeflow 選用的版本是<code>cs:kubeflow-245</code>，也是嘗試加上爬文後，確認可行的版本。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ microk8s enable kubeflow --bundle<span style="color:#f92672">=</span>cs:kubeflow-245
+Enabling dns...
+Enabling storage...
+Enabling ingress...
+Enabling metallb:10.64.140.43-10.64.140.49...
+Waiting <span style="color:#66d9ef">for</span> other addons to finish initializing...
+Addon setup complete. Checking connectivity...
+Bootstrapping...
+Bootstrap complete.
+Successfully bootstrapped, deploying...
+Kubeflow deployed.
+Waiting <span style="color:#66d9ef">for</span> operator pods to become ready.
+Waited 0s <span style="color:#66d9ef">for</span> operator pods to come up, <span style="color:#ae81ff">24</span> remaining.
+Waited 15s <span style="color:#66d9ef">for</span> operator pods to come up, <span style="color:#ae81ff">21</span> remaining.
+Waited 30s <span style="color:#66d9ef">for</span> operator pods to come up, <span style="color:#ae81ff">21</span> remaining.
+...
+Waited 645s <span style="color:#66d9ef">for</span> operator pods to come up, <span style="color:#ae81ff">1</span> remaining.
+Operator pods ready.
+Congratulations, Kubeflow is now available.
+
+The dashboard is available at http://10.64.140.43.nip.io
+
+    Username: admin
+    Password: GVCELKGPEE2I9JAT6RV670MUM7LOK9
+
+To see these values again, run:
+
+    microk8s juju config dex-auth static-username
+    microk8s juju config dex-auth static-password
+
+
+
+To tear down Kubeflow and associated infrastructure, run:
+
+    microk8s disable kubeflow
+</code></pre></div><blockquote>
+<p>可能會在 <code>Operator pods ready.</code> 的階段等很久，因為其實還有很多 pod 正在建立中。你可以透過以下指令，確認目前尚未完成的項目：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ microk8s kubectl -n kubeflow get pods | grep 0/
+kubeflow-profiles-5db9ffd44f-c6gr4             0/2     PodInitializing   <span style="color:#ae81ff">0</span>          22m
+pipelines-viewer-5679b95c8d-h8767              0/1     PodInitializing   <span style="color:#ae81ff">0</span>          16m
+pipelines-scheduledworkflow-79cf4c6649-mzv8f   0/1     PodInitializing   <span style="color:#ae81ff">0</span>          17m
+tf-job-operator-85f9558966-cslz2               0/1     PodInitializing   <span style="color:#ae81ff">0</span>          16m
+...
+
+</code></pre></div><p>如果一直卡在某個 pod 出現 ImagePullBackOff 的狀況，而且你也正巧覺得正在使用的網路很爛，那基本上就是網路的問題。這種情況下，就刪除這個 pod，給他一個重新 Pull Image 的機會吧：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ microk8s kubectl -n kubeflow get pods | grep 0/
+pipelines-visualization-67b6995765-8fs6k       0/1     ImagePullBackOff   <span style="color:#ae81ff">0</span>          30m
+$ microk8s kubectl delete pod pipelines-visualization-67b6995765-8fs6k -n kubeflow
+pod <span style="color:#e6db74">&#34;pipelines-visualization-67b6995765-8fs6k&#34;</span> deleted
+</code></pre></div></blockquote>
+<p>執行後，大概會需要 30 - 50 分鐘以上的時間，才會完成建立，就看網路的狀況而定。接下來，由於<strong>此版本的 kubeflow UI 會缺少功能選單</strong>，所以還需要再下次指令，讓 UI 上的選單長回來：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ microk8s kubectl apply -n kubeflow -f https://raw.githubusercontent.com/kubeflow/manifests/master/apps/centraldashboard/upstream/base/configmap.yaml
+</code></pre></div><p>現在 kubeflow 已經安裝好囉！接下來就是要開啟 kubeflow 的 Web UI 來操作 kubeflow。</p>
+<h3 id="setting-sock-proxy-for-opening-kubeflow-ui-from-microk8s-vm">Setting Sock Proxy for Opening kubeflow UI from microk8s-vm</h3>
+<p>為了要開啟在虛擬機內的 Web 服務，首先需要建立與 microk8s-vm 間的通道，再進一步透過 Sock Proxy 的方式與 microk8s-vm 內的 microk8s 網路互通。建立通道的方式，在這邊是用 <code>ssh -D</code>的方式。但要怎麼從原先的 <code>multipass shell microk8s-vm</code> 改用 ssh 的方式，連線至 microk8s-vm 呢？我們只需要對  microk8s-vm 動一些手腳即可：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ cd ~/.ssh
+<span style="color:#75715e"># 備份原本的 key 以備不時之需</span>
+$ cp authorized_keys authorized_keys.backup
+<span style="color:#75715e"># 用自己的公鑰進行替換</span>
+echo <span style="color:#e6db74">&#34;&lt;your public key&gt;&#34;</span> &gt; authorized_keys
+</code></pre></div><p>動完手腳後，你已經可以透過 ssh 連進 microk8s-vm 囉！那我們就來建立通道吧！</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># 回到 Mac 的 Terminal</span>
+$ exit
+logout
+Connection to 192.168.64.2 closed.
+<span style="color:#75715e"># 建立通道在 9999 port 上</span>
+$ ssh -D9999 ubuntu@192.168.64.2
+</code></pre></div><p>成功連進去後，就可以開始在 Mac 上設定 Sock Proxy。設定方式為：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">開啟<span style="color:#e6db74">&#39;系統偏好設定&#39;</span> 
+-&gt; 點選<span style="color:#e6db74">&#39;網路&#39;</span> 
+-&gt; 在左邊清單中，選擇正在使用的網路 
+-&gt; 點選右下角的<span style="color:#e6db74">&#39;進階&#39;</span> 
+-&gt; 點選倒數第二個選項<span style="color:#e6db74">&#39;代理伺服器&#39;</span> 
+-&gt; 選擇左方清單中的<span style="color:#e6db74">&#39;SOCKS 代理伺服器&#39;</span>
+-&gt; 在右方的 IP 及 Port 欄位鍵入<span style="color:#e6db74">&#39;127.0.0.1&#39;</span>:<span style="color:#e6db74">&#39;9999&#39;</span> <span style="color:#75715e"># 也就是我們剛剛透過 ssh 建立的通道</span>
+-&gt; 點選右下角的<span style="color:#e6db74">&#39;好&#39;</span>完成設定
+-&gt; 點選右下角的<span style="color:#e6db74">&#39;套用&#39;</span> &lt;------------------- 請注意，這項最容易被忽略！
+</code></pre></div><p>此時，你的網路已經開始透過 microk8s-vm 進行轉送，也就可以在 Browser 中，透過剛剛 enable kubeflow 時，得到的 URL 及帳號密碼，登入你的 kubeflow Web 介面。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">The dashboard is available at http://10.64.140.43.nip.io
+
+    Username: admin
+    Password: GVCELKGPEE2I9JAT6RV670MUM7LOK9
+</code></pre></div><p>如果畫面一切正常，那就恭喜你，在 Mac 上架好 kubeflow 的環境囉！</p>
+
+    </div>
+  </article>
+
+  
+  
+
+
+
+
+
+
+  <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/posts">Writings</a></li>
+         
+          <li><a href="/tags">Tags</a></li>
+         
+          <li><a href="/about">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+    <div id="toc-footer" style="display: none">
+      <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#install-homebrew">Install Homebrew</a></li>
+        <li><a href="#install-multipass">Install Multipass</a></li>
+        <li><a href="#launch-a-ubuntu-machine">Launch a Ubuntu Machine</a></li>
+        <li><a href="#build-kubeflow-by-microk8s-add-on">Build kubeflow by microk8s add-on</a></li>
+        <li><a href="#setting-sock-proxy-for-opening-kubeflow-ui-from-microk8s-vm">Setting Sock Proxy for Opening kubeflow UI from microk8s-vm</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+    </div>
+    
+
+    <div id="share-footer" style="display: none">
+      
+      <ul>
+  
+  
+    
+  
+  
+  <li>
+    <a class="icon" href="http://www.facebook.com/sharer.php?u=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f" aria-label="Facebook">
+      <i class="fab fa-facebook fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://twitter.com/share?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&text=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Twitter">
+      <i class="fab fa-twitter fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.linkedin.com/shareArticle?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Linkedin">
+      <i class="fab fa-linkedin fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&is_video=false&description=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Pinterest">
+      <i class="fab fa-pinterest fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="mailto:?subject=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae&body=Check out this article: https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f" aria-label="Email">
+      <i class="fas fa-envelope fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://getpocket.com/save?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Pocket">
+      <i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://reddit.com/submit?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&title=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="reddit">
+      <i class="fab fa-reddit fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.tumblr.com/share/link?url=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&name=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae&description=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%ef%bc%9f%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae%20%e5%b0%8f%e5%bc%9f%e5%9b%a0%e5%b7%a5%e4%bd%9c%e7%9a%84%e7%b7%a3%e6%95%85%ef%bc%8c%e9%9c%80%e8%a6%81%e9%96%8b%e5%a7%8b%e7%86%9f%e6%82%89%20kubeflow%20%e5%88%b0%e5%ba%95%e6%98%af%e4%bb%80%e9%ba%bc%ef%bc%8c%e6%89%80%e4%bb%a5%e5%b0%b1%e7%95%b0%e6%83%b3%e5%a4%a9%e9%96%8b%e7%9a%84%e6%83%b3%e5%9c%a8%e8%87%aa%e5%b7%b1%e7%9a%84%20Mac%20%e4%b8%8a%e5%bb%ba%e7%ab%8b%e4%b8%80%e5%80%8b%20kubeflow%20%e7%9a%84%e7%92%b0%e5%a2%83%ef%bc%88%e7%97%9b%e8%8b%a6%e7%9a%84%e9%96%8b%e5%a7%8b%ef%bc%8c%e5%be%80%e5%be%80%e9%83%bd%e6%98%af%e5%a6%82%e6%ad%a4%ef%bc%89%e3%80%82%e4%bb%a5%e4%b8%8b%e5%b0%87%e6%98%af%e6%88%91%e5%98%97%e8%a9%a6%e5%a4%9a%e7%a8%ae%e5%ae%89%e8%a3%9d%e7%b5%84%e5%90%88%e5%be%8c%ef%bc%8c%e5%b9%b8%e9%81%8b%e8%a9%a6%e5%87%ba%e7%9a%84%e4%b8%80%e7%a8%ae%e6%9e%b6%e8%a8%ad%e6%96%b9%e5%bc%8f%ef%bc%8c%e5%b8%8c%e6%9c%9b%e8%ae%80%e8%80%85%e4%b9%9f%e8%83%bd%e5%9c%a8%20Mac%20%e4%b8%8a%e9%a0%86%e5%88%a9%e6%9e%b6%e8%b5%b7%20kubeflow%e3%80%82%e9%a6%96%e5%85%88%ef%bc%8c%e4%ba%86%e8%a7%a3%e6%95%b4%e9%ab%94%e5%a4%a7%e6%a6%82%e7%9a%84%e6%b5%81%e7%a8%8b%ef%bc%8c%e6%88%96%e8%a8%b1%e6%9c%83%e6%af%94%e8%bc%83%e6%9c%89%e5%b9%ab%e5%8a%a9%e3%80%82%0aOverview%20%20Homebrew%ef%bc%9a%e7%94%a8%e4%be%86%e5%ae%89%e8%a3%9d%20Multipass%e3%80%82%20Multipass%ef%bc%9a%e7%94%a8%e4%be%86%e9%96%8b%e5%95%9f%20Ubuntu%20%e8%99%9b%e6%93%ac%e6%a9%9f%e3%80%82%20Ubuntu%20%e8%99%9b%e6%93%ac%e6%a9%9f%ef%bc%9a%e7%94%a8%e4%be%86%e5%ae%89%e8%a3%9d%20microk8s%e3%80%82%20microk8s%ef%bc%9a%e9%80%8f%e9%81%8e%20add-on%20%e5%ae%89%e8%a3%9d%20kubeflow%e3%80%82%20%20%20%e9%97%9c%e6%96%bc%e8%a8%ad%e5%82%99%e7%9a%84%e8%a6%81%e6%b1%82%ef%bc%8c%e5%a6%82%e6%9e%9c%e4%bd%a0%e7%9a%84%20Mac%20%e6%b2%92%e6%9c%89%2016G%20%e7%9a%84%20Memory%ef%bc%8c%e9%80%99%e7%af%87%e6%96%87%e7%ab%a0%e5%8f%af%e8%83%bd%e6%b2%92%e8%be%a6%e6%b3%95%e5%b8%b6%e7%b5%a6%e4%bd%a0%e6%9c%89%e6%95%88%e7%9a%84%e5%b9%ab%e5%8a%a9%e3%80%82%0a%20%e6%9c%89%e4%ba%86%e4%bb%a5%e4%b8%8a%e7%9a%84%e8%97%8d%e5%9c%96%ef%bc%8c%e6%8e%a5%e4%b8%8b%e4%be%86%e5%b0%b1%e5%8f%af%e4%bb%a5%e9%96%8b%e5%a7%8b%e5%8b%95%e6%89%8b%e5%9b%89%ef%bc%81%0aInstall%20Homebrew%20%e5%9c%a8%20Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%e5%a5%97%e4%bb%b6%e6%80%8e%e9%ba%bc%e8%83%bd%e5%b0%91%e4%ba%86%20Homebrew%20%e5%91%a2%ef%bc%9f%e9%80%99%e9%82%8a%e4%b8%8d%e5%85%8d%e4%bf%97%e7%9a%84%e5%b8%b6%e9%81%8e%e4%b8%80%e4%b8%8b%ef%bc%9a%0a%24%20%2fbin%2fbash%20-c%20%26%2334%3b%24%28curl%20-fsSL%20https%3a%2f%2fraw.githubusercontent.com%2fHomebrew%2finstall%2fHEAD%2finstall.sh%29%26%2334%3b%20Install%20Multipass%20%e6%8e%a5%e4%b8%8b%e4%be%86%ef%bc%8c%e9%80%8f%e9%81%8e%20Homebrew%20%e4%be%86%e5%ae%89%e8%a3%9d%20Multipass%20%e5%90%a7%ef%bc%81%0a%24%20brew%20install%20multipass%20Launch%20a%20Ubuntu%20Machine%20%e5%a6%82%e6%9e%9c%e4%b8%8a%e8%bf%b0%e7%9a%84%e5%ae%89%e8%a3%9d%e9%83%bd%e9%a0%86%e5%88%a9%e5%ae%8c%e6%88%90%ef%bc%8c%e9%82%a3%e5%b0%b1%e5%8f%af%e4%bb%a5%e9%96%8b%e5%a7%8b%e5%bb%ba%e7%ab%8b%e4%b8%80%e5%80%8b%20Ubuntu%20Machine%ef%bc%8c%e4%bb%a5%e4%be%bf%e5%ae%89%e8%a3%9d%20microk8s%e3%80%82%e9%80%99%e9%82%8a%e6%88%91%e9%85%8d%e4%ba%86%204%20%e5%80%8b%20CPU%20%e5%8f%8a%2012G%20%e7%9a%84%20Memory%20%e7%b5%a6%e9%80%99%e5%8f%b0%20Machine%e3%80%82%e5%85%b6%e4%b8%ad%ef%bc%8cMemory%20%e8%a6%81%2012G%20%e6%98%af%20kubeflow%20%e7%9a%84%e5%9f%ba%e6%9c%ac%e9%9c%80%e6%b1%82%ef%bc%8c%e9%9b%96%e7%84%b6%e5%8f%af%e4%bb%a5%e9%80%8f%e9%81%8e%e7%92%b0%e5%a2%83%e8%ae%8a%e6%95%b8%ef%bc%88KUBEFLOW_IGNORE_MIN_MEM%3dtrue%ef%bc%89%ef%bc%8c%e5%bf%bd%e7%95%a5%e9%80%99%e9%a0%85%e8%a6%81%e6%b1%82%ef%bc%8c%e4%bd%86%e7%82%ba%e4%ba%86%e6%b1%82%e9%a0%86%e5%88%a9%e6%9e%b6%e8%a8%ad%ef%bc%8c%e6%88%91%e9%82%84%e6%98%af%e9%85%8d%2012G%20%e7%b5%a6%e5%ae%83%e3%80%82" aria-label="Tumblr">
+      <i class="fab fa-tumblr fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://news.ycombinator.com/submitlink?u=https%3a%2f%2fyanhaochen.github.io%2fposts%2fbuild-kubeflow-on-mac%2f&t=Mac%20%e4%b8%8a%e5%ae%89%e8%a3%9d%20kubeflow%3f%20%e5%85%b6%e5%af%a6%e4%b8%8d%e5%a4%aa%e7%b0%a1%e5%96%ae" aria-label="Hacker News">
+      <i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      
+        <a id="menu-toggle" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;" aria-label="Menu">
+          <i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+        <a id="toc-toggle" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;" aria-label="TOC">
+          <i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share-toggle" class="icon" href="#" onclick="$('#share-footer').toggle();return false;" aria-label="Share">
+          <i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" aria-label="Top of Page">
+          <i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+
+  <footer id="footer">
+  <div class="footer-left">
+    Copyright  &copy; 2021  Yan-Hao(Sean) Blog 
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+        <li><a href="/">Home</a></li>
+         
+        <li><a href="/posts">Writings</a></li>
+         
+        <li><a href="/tags">Tags</a></li>
+         
+        <li><a href="/about">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+
+  </div>
+</body>
+
+<link rel="stylesheet" href=/lib/font-awesome/css/all.min.css>
+<script src=/lib/jquery/jquery.min.js></script>
+<script src=/js/main.js></script>
+
+<script src=/js/code-copy.js></script>
+
+
+
+
+</html>

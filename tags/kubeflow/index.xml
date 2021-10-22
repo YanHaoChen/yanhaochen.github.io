@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>kubeflow on Yan-Hao(Sean) Blog</title>
+    <link>https://yanhaochen.github.io/tags/kubeflow/</link>
+    <description>Recent content in kubeflow on Yan-Hao(Sean) Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-tw</language>
+    <lastBuildDate>Sun, 17 Oct 2021 22:30:12 +0800</lastBuildDate><atom:link href="https://yanhaochen.github.io/tags/kubeflow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Mac 上安裝 kubeflow? 其實不太簡單</title>
+      <link>https://yanhaochen.github.io/posts/build-kubeflow-on-mac/</link>
+      <pubDate>Sun, 17 Oct 2021 22:30:12 +0800</pubDate>
+      
+      <guid>https://yanhaochen.github.io/posts/build-kubeflow-on-mac/</guid>
+      <description>Mac 上安裝 kubeflow？其實不太簡單 小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。
+Overview  Homebrew：用來安裝 Multipass。 Multipass：用來開啟 Ubuntu 虛擬機。 Ubuntu 虛擬機：用來安裝 microk8s。 microk8s：透過 add-on 安裝 kubeflow。   關於設備的要求，如果你的 Mac 沒有 16G 的 Memory，這篇文章可能沒辦法帶給你有效的幫助。
+ 有了以上的藍圖，接下來就可以開始動手囉！
+Install Homebrew 在 Mac 上安裝套件怎麼能少了 Homebrew 呢？這邊不免俗的帶過一下：
+$ /bin/bash -c &amp;#34;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)&amp;#34; Install Multipass 接下來，透過 Homebrew 來安裝 Multipass 吧！
+$ brew install multipass Launch a Ubuntu Machine 如果上述的安裝都順利完成，那就可以開始建立一個 Ubuntu Machine，以便安裝 microk8s。這邊我配了 4 個 CPU 及 12G 的 Memory 給這台 Machine。其中，Memory 要 12G 是 kubeflow 的基本需求，雖然可以透過環境變數（KUBEFLOW_IGNORE_MIN_MEM=true），忽略這項要求，但為了求順利架設，我還是配 12G 給它。</description>
+    </item>
+    
+  </channel>
+</rss>
