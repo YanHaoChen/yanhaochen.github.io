@@ -8,6 +8,15 @@
     <language>zh-tw</language>
     <lastBuildDate>Sun, 17 Oct 2021 22:30:12 +0800</lastBuildDate><atom:link href="https://yanhaochen.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>About</title>
+      <link>https://yanhaochen.github.io/about/</link>
+      <pubDate>Fri, 22 Oct 2021 23:57:16 +0800</pubDate>
+      
+      <guid>https://yanhaochen.github.io/about/</guid>
+      <description>Hi! 這是 YanHao(Sean) 的 Blog 這裡會記載研究軟體技術上，相關的苦難事（或許還有一些日常的無病呻吟）。如果我的經驗（痛苦？！）能幫助正在閱讀的你，謝謝你讓我的經驗增添一些正向的意義 ^_&amp;lt;</description>
+    </item>
+    
+    <item>
       <title>Mac 上安裝 kubeflow? 其實不太簡單</title>
       <link>https://yanhaochen.github.io/posts/build-kubeflow-on-mac/</link>
       <pubDate>Sun, 17 Oct 2021 22:30:12 +0800</pubDate>
