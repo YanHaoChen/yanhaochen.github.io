@@ -231,7 +231,8 @@ Normal   Scheduled         24m   default-scheduler  Successfully assigned admin/
 Normal   Pulled            24m   kubelet            Container image <span style="color:#e6db74">&#34;gcr.io/kubeflow-images-public/tensorflow-1.15.2-notebook-cpu:1.0.0&#34;</span> already present on machine
 Normal   Created           24m   kubelet            Created container playground
 Normal   Started           24m   kubelet            Started container playground
-</code></pre></div><p>此時，在<code>Events</code> 的地方找到對應的訊息了。看起來是一開始（Age: 25m）PersistentVolumeClaims（PVC）並沒有成功進行 bound 。但隨後（Age: 24m：Successfully assigned admin/playground-0 to microk8s-vm）就重新 bound 成功。這時候，我的解決方式很日常。重啟治百病：</p>
+</code></pre></div><p>此時，在 Events 的地方找到對應的訊息了。看起來，是在一開始（Age: 25m：0/1 nodes are available: 1 pod has unbound immediate），PersistentVolumeClaims（PVC）並沒有成功進行 bound 。但隨後（Age: 24m：Successfully assigned admin/playground-0 to microk8s-vm）就重新 bound 成功。</p>
+<p>感覺上，似乎是這筆訊息，讓 Dashboard 顯示異常。這時候，我的解決方式很日常。透過重啟，洗掉 Event 中的錯誤：</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ kubectl delete pod playground-0 -n admin
 pod <span style="color:#e6db74">&#34;playground-0&#34;</span> deleted
 </code></pre></div><blockquote>
@@ -258,7 +259,7 @@ Normal  Scheduled  3s    default-scheduler  Successfully assigned admin/playgrou
 Normal  Pulled     2s    kubelet            Container image <span style="color:#e6db74">&#34;gcr.io/kubeflow-images-public/tensorflow-1.15.2-notebook-cpu:1.0.0&#34;</span> already present on machine
 Normal  Created    1s    kubelet            Created container playground
 Normal  Started    1s    kubelet            Started container playground
-</code></pre></div><p>現在這個 Pod 的 <code>Events</code> 中，已經沒有剛剛出現的 <code>FailedScheduling</code>。此時，Dashboard 上的 Status 已經變成打勾，也可點擊 <code>Connect</code> 連進 Server 囉！</p>
+</code></pre></div><p>現在這個 Pod 的 Event 中，已經沒有剛剛出現的錯誤訊息。此時，Dashboard 上的 Status 已經變成打勾，也可點擊 <code>Connect</code> 連進 Server 囉！</p>
 <h3 id="總結">總結</h3>
 <p>Pod 中的 Events 有可能會影響到 kubeflow Dashboard 上的狀態，如果在 Dashboard 上發現一些異常的訊息，但實際查看相關 Pod 並沒有異常，有可能是因為 Events 紀錄到某些的錯誤而導致。</p>
 
