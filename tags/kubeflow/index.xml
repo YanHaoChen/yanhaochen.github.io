@@ -6,14 +6,25 @@
     <description>Recent content in kubeflow on Yan-Hao(Sean) Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-tw</language>
-    <lastBuildDate>Sun, 17 Oct 2021 22:30:12 +0800</lastBuildDate><atom:link href="https://yanhaochen.github.io/tags/kubeflow/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 23 Oct 2021 23:47:34 +0800</lastBuildDate><atom:link href="https://yanhaochen.github.io/tags/kubeflow/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>使用 kubeflow 的你也遇到這個問題了嗎? Jupyter Server: 1 pod has unbound immediate PersistentVolumeClaims?!</title>
+      <link>https://yanhaochen.github.io/posts/kubeflow-jupyter-server-persistent-volume-claim-issue/</link>
+      <pubDate>Sat, 23 Oct 2021 23:47:34 +0800</pubDate>
+      
+      <guid>https://yanhaochen.github.io/posts/kubeflow-jupyter-server-persistent-volume-claim-issue/</guid>
+      <description>又是一個讓我懷疑人生的問題。經過在 local 建置 kubeflow 的摧殘後（詳情請看：Mac 上安裝 kubeflow? 其實不太簡單），以為一切就要風平浪靜，但就在建立第一個 Jupyter Server （它的名字叫做 playground-0）時，好奇怪？怎麼 Server 一直無法成功建立，在 Status 上的狀態顯示playground-0 default-scheduler 0/1 nodes are available: 1 pod has unbound immediate PersistentVolumeClaims。為了解決這個問題，第一時間想到的就是查看 k8s 的狀況（也沒有其他招了&amp;hellip;）：
+# 如果是用 microk8s，後續的指令 &amp;#39;kubectl&amp;#39; 皆改成 &amp;#39;microk8s kubectl&amp;#39; 即可。 $ kubectl get pods -n admin NAME READY STATUS RESTARTS AGE playground-0 1/1 Running 0 6h11m 等等，看起來似乎沒有什麼異常。只好再看細一點。describe 這 pod：
+$ kubectl describe pod playground-0 -n admin Name: playground-0 Namespace: admin Priority: 0 Node: microk8s-vm/192.</description>
+    </item>
+    
     <item>
       <title>Mac 上安裝 kubeflow? 其實不太簡單</title>
       <link>https://yanhaochen.github.io/posts/build-kubeflow-on-mac/</link>
       <pubDate>Sun, 17 Oct 2021 22:30:12 +0800</pubDate>
       
       <guid>https://yanhaochen.github.io/posts/build-kubeflow-on-mac/</guid>
-      <description>Mac 上安裝 kubeflow？其實不太簡單 小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。
+      <description>小弟因工作的緣故，需要開始熟悉 kubeflow 到底是什麼，所以就異想天開的想在自己的 Mac 上建立一個 kubeflow 的環境（痛苦的開始，往往都是如此）。以下將是我嘗試多種安裝組合後，幸運試出的一種架設方式，希望讀者也能在 Mac 上順利架起 kubeflow。首先，了解整體大概的流程，或許會比較有幫助。
 Overview  Homebrew：用來安裝 Multipass。 Multipass：用來開啟 Ubuntu 虛擬機。 Ubuntu 虛擬機：用來安裝 microk8s。 microk8s：透過 add-on 安裝 kubeflow。   關於設備的要求，如果你的 Mac 沒有 16G 的 Memory，這篇文章可能沒辦法帶給你有效的幫助。
  有了以上的藍圖，接下來就可以開始動手囉！
 Install Homebrew 在 Mac 上安裝套件怎麼能少了 Homebrew 呢？這邊不免俗的帶過一下：
