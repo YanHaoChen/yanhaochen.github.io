@@ -8,11 +8,11 @@
     <language>zh-tw</language>
     <lastBuildDate>Sat, 23 Oct 2021 23:47:34 +0800</lastBuildDate><atom:link href="https://yanhaochen.github.io/tags/kubeflow/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>使用 kubeflow 的你也遇到這個問題了嗎? Jupyter Server: 1 pod has unbound immediate PersistentVolumeClaims?!</title>
-      <link>https://yanhaochen.github.io/posts/kubeflow-jupyter-server-persistent-volume-claim-issue/</link>
+      <title>使用 kubeflow 的你也遇到這個問題了嗎? Notebook Server: 1 pod has unbound immediate PersistentVolumeClaims?!</title>
+      <link>https://yanhaochen.github.io/posts/kubeflow-notebook-server-persistent-volume-claim-issue/</link>
       <pubDate>Sat, 23 Oct 2021 23:47:34 +0800</pubDate>
       
-      <guid>https://yanhaochen.github.io/posts/kubeflow-jupyter-server-persistent-volume-claim-issue/</guid>
+      <guid>https://yanhaochen.github.io/posts/kubeflow-notebook-server-persistent-volume-claim-issue/</guid>
       <description>又是一個讓我懷疑人生的問題。經過在 local 建置 kubeflow 的摧殘後（詳情請看：Mac 上安裝 kubeflow? 其實不太簡單），以為一切就要風平浪靜，但就在建立第一個 Jupyter Server （它的名字叫做 playground-0）時，好奇怪？怎麼 Server 一直無法成功建立，在 Status 上的狀態顯示playground-0 default-scheduler 0/1 nodes are available: 1 pod has unbound immediate PersistentVolumeClaims。為了解決這個問題，第一時間想到的就是查看 k8s 的狀況（也沒有其他招了&amp;hellip;）：
 查看 pod 狀態 # 如果是用 microk8s，後續的指令 &amp;#39;kubectl&amp;#39; 皆改成 &amp;#39;microk8s kubectl&amp;#39; 即可。 $ kubectl get pods -n admin NAME READY STATUS RESTARTS AGE playground-0 1/1 Running 0 6h11m 等等，看起來似乎沒有什麼異常。只好再看細一點。describe 這 pod：
 $ kubectl describe pod playground-0 -n admin Name: playground-0 Namespace: admin Priority: 0 Node: microk8s-vm/192.</description>
